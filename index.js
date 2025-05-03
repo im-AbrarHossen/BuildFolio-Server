@@ -44,6 +44,8 @@ async function run() {
         const couponsCollection = database.collection('coupons');
         const membersCollection = database.collection('members');
         const adminCollection = database.collection('admin');
+        const testimonialCollection = database.collection('testimonials');
+        const articleCollection = database.collection('articles');
 
 
         // JWT Authentication
@@ -269,6 +271,27 @@ async function run() {
             }
         });
 
+        // Testimonials
+        app.get('/testimonials', async (req, res) => {
+            try {
+                const cursor = testimonialCollection.find();
+                const result = await cursor.toArray();
+                res.status(200).send(result);
+            } catch (err) {
+                res.status(500).send({ error: 'Error fetching posts' });
+            }
+        });
+        // Articles
+        app.get('/articles', async (req, res) => {
+            try {
+                const cursor = articleCollection.find();
+                const result = await cursor.toArray();
+                res.status(200).send(result);
+            } catch (err) {
+                res.status(500).send({ error: 'Error fetching posts' });
+            }
+        });
+
 
         // Members API
         app.get('/members', async (req, res) => {
@@ -294,11 +317,28 @@ async function run() {
             }
         });
 
-
         app.delete('/members/:id', async (req, res) => {
             const id = req.params.id;
             const result = await membersCollection.deleteOne({ _id: new ObjectId(id) });
             res.send(result);
+        });
+
+        app.get('/members/email/:email', async (req, res) => {
+            try {
+                const email = req.params.email;
+                console.log("Searching for:", email); // Debug log
+
+                const member = await membersCollection.findOne({ userEmail: email });
+
+                if (!member) {
+                    return res.status(404).send({ error: 'Member not found' });
+                }
+
+                res.status(200).send(member);
+            } catch (err) {
+                console.error("DB error:", err); // Full error
+                res.status(500).send({ error: 'Error fetching member' });
+            }
         });
 
         // Admin API
